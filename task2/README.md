@@ -1,4 +1,4 @@
-# JOIN, LEFT JOIN, Смена порядка столбцов
+# JOIN, LEFT JOIN, смена порядка столбцов, заполнение нового столбца, триггеры
 ## Создание таблиц users и orders
 ```sql
 CREATE TABLE users (
@@ -74,4 +74,37 @@ SELECT order_id, product, user_id, quantity
 FROM orders_temp;
 
 DROP TABLE orders_temp;
+```
+## Добавим новый столбец и заполним его данными на основе существующих данных
+```sql
+ALTER TABLE users
+ADD COLUMN total_quantity INT DEFAULT 0;
+
+UPDATE users AS u
+SET total_quantity = (
+  SELECT SUM(o.quantity)
+  FROM orders AS o
+  WHERE o.user_id = u.user_id
+);
+```
+## Напишем триггер, который будет это делать сам за нас в дальнейшем
+```sql
+CREATE OR REPLACE FUNCTION update_total_quantity()
+RETURNS TRIGGER AS '
+BEGIN
+  UPDATE users
+  SET total_quantity = (
+    SELECT SUM(quantity)
+    FROM orders
+    WHERE user_id = NEW.user_id
+  )
+  WHERE user_id = NEW.user_id;
+  RETURN NEW;
+END;
+' LANGUAGE plpgsql;
+
+CREATE TRIGGER update_product_quantity
+AFTER INSERT OR UPDATE ON orders
+FOR EACH ROW
+EXECUTE FUNCTION update_total_quantity();
 ```
