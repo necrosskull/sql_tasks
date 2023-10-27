@@ -16,11 +16,11 @@ FROM aircrafts_data
 WHERE (range > 10000 OR range < 4000) OR (range > 6000 AND model->>'en' NOT LIKE '%100');
 ```
 
-№4. Определите номера и время отправления всех рейсов, прибывших в 
+№4. Определите номера и время отправления всех рейсов, прибывших в аэропорт назначения не вовремя. 
 ```sql
-SELECT flight_no, scheduled_departure, arrival_airport
+SELECT flight_no, scheduled_departure
 FROM flights
-WHERE arrival_airport = 'SVO' AND status = 'Arrived';
+WHERE status = 'Arrived' AND actual_arrival > scheduled_arrival;
 ```
 
 №5. Подсчитайте количество отмененных рейсов из аэропорта Пулково (LED), как вылет, так и прибытие которых было назначено на четверг.
