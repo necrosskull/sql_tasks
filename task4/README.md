@@ -1,27 +1,37 @@
 **Первая часть:**
 
 1. **Создание нежурналируемой таблицы и удаление табличного пространства:**
+```bash
+cd home/
+mkdir /home/tablespace
+chown postgres:postgres /home/tablespace
+chmod g+rwx /home/tablespace
+```
+
 ```sql
 -- Создание табличного пространства
-CREATE TABLESPACE my_tablespace LOCATION '/path/to/my_tablespace';
+CREATE TABLESPACE new_tablespace
+OWNER postgres
+LOCATION '/home/tablespace';
 
 -- Создание нежурналируемой таблицы в пользовательском табличном пространстве
-CREATE UNLOGGED TABLE my_unlogged_table (id serial, data text) TABLESPACE my_tablespace;
+CREATE UNLOGGED TABLE my_unlogged_table (id serial, data text) TABLESPACE new_tablespace;
 
 -- Проверка существования слоя init для таблицы
 SELECT relname, relpersistence FROM pg_class WHERE relname = 'my_unlogged_table';
 
 -- Удаление табличного пространства
-DROP TABLESPACE my_tablespace;
+DROP TABLE my_unlogged_table;
+DROP TABLESPACE new_tablespace;
 ```
 
 2. **Создание таблицы с типом данных text и изменение стратегии хранения:**
 ```sql
 -- Создание таблицы с типом данных text
-CREATE TABLE text_table (id serial, content text);
+CREATE TABLE text_table (content text);
 
 -- Проверка текущей стратегии хранения (Storage)
-SELECT column_name, storage FROM information_schema.columns WHERE table_name = 'text_table';
+\d+ text_table;
 
 -- Изменение стратегии хранения на external
 ALTER TABLE text_table ALTER COLUMN content SET STORAGE EXTERNAL;
@@ -32,22 +42,30 @@ INSERT INTO text_table (content) VALUES ('Short text');
 -- Вставка длинной строки
 INSERT INTO text_table (content) VALUES (repeat('A', 10000));
 
+-- Нахождение отношения
+SELECT relname, relfilenode
+FROM pg_class
+WHERE oid = (
+    SELECT reltoastrelid
+    FROM pg_class
+    WHERE oid = 'text_table'::regclass
+);
+
 -- Проверка toast-таблицы
-SELECT * FROM pg_toast.pg_toast_1;
+select * from pg_toast.pg_toast_24603;
 ```
 
 **Вторая часть:**
 
 1. **Создание нового табличного пространства:**
 ```sql
-CREATE TABLESPACE new_tablespace LOCATION '/path/to/new_tablespace';
+CREATE TABLESPACE new_tablespace
+OWNER postgres
+LOCATION '/home/tablespace';
 ```
 
 2. **Изменение табличного пространства по умолчанию для template1:**
 ```sql
--- Сначала подключитесь к базе данных template1
-\c template1
-
 -- Изменение табличного пространства по умолчанию
 ALTER DATABASE template1 SET TABLESPACE new_tablespace;
 ```
