@@ -5,14 +5,14 @@
 ```sql
 -- Сессия 1
 CREATE TABLE my_table (id serial PRIMARY KEY, data text);
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
 ```
 
 В сессии 2:
 
 ```sql
 -- Сессия 2
+BEGIN TRANSACTION;
 DELETE FROM my_table WHERE id = 1;
 COMMIT;
 ```
@@ -37,14 +37,14 @@ COMMIT;
 ```sql
 -- Сессия 1
 CREATE TABLE my_table (id serial PRIMARY KEY, data text);
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 ```
 
 В сессии 2:
 
 ```sql
 -- Сессия 2
+BEGIN TRANSACTION;
 DELETE FROM my_table WHERE id = 1;
 COMMIT;
 ```
