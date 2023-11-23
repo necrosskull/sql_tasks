@@ -163,6 +163,12 @@ SELECT * FROM my_schema.my_table;
 
 ### [выполнена тут](https://github.com/necrosskull/sql_tasks/tree/main/task3)
 
+# Pr 10
+
+### [выполнена тут](https://github.com/necrosskull/sql_tasks/tree/main/task4)
+
+
+
 
 
 
